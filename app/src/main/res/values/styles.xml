@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="AppTheme" parent="android:Theme.Material.NoActionBar.Fullscreen">
+        <item name="android:windowBackground">@drawable/splash</item>
+        <item name="android:statusBarColor">#0a1236</item>
+        <item name="android:navigationBarColor">#0a1236</item>
+        <item name="android:windowContentOverlay">@null</item>
+    </style>
+</resources>

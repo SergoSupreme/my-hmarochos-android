@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.VIBRATE" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+
+    <application android:label="@string/app_name" android:icon="@mipmap/ic_launcher" android:allowBackup="true"
+        android:usesCleartextTraffic="false" android:hardwareAccelerated="true" android:largeHeap="true">
+        <activity android:name=".MainActivity" android:exported="true" android:screenOrientation="portrait"
+            android:theme="@style/AppTheme" android:launchMode="singleTask"
+            android:configChanges="orientation|screenSize|keyboardHidden|keyboard|screenLayout|uiMode|smallestScreenSize"
+            android:windowSoftInputMode="adjustResize">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <!-- Пуш-сповіщення Firebase -->
+        <service android:name=".PushService" android:exported="false">
+            <intent-filter>
+                <action android:name="com.google.firebase.MESSAGING_EVENT" />
+            </intent-filter>
+        </service>
+        <meta-data android:name="com.google.firebase.messaging.default_notification_icon" android:resource="@drawable/ic_stat_notify" />
+        <meta-data android:name="com.google.firebase.messaging.default_notification_color" android:resource="@color/notify" />
+        <meta-data android:name="com.google.firebase.messaging.default_notification_channel_id" android:value="main" />
+    </application>
+</manifest>

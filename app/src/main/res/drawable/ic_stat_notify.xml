@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Маленька біла іконка для рядка сповіщень: силует хмарочосів -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp" android:height="24dp" android:viewportWidth="24" android:viewportHeight="24">
+    <path android:fillColor="#FFFFFFFF"
+        android:pathData="M11,1 L13,1 L13,3 L15,3 L15,6 L17,6 L17,22 L19,22 L19,11 L22,11 L22,22 L23,22 L23,23 L1,23 L1,22 L2,22 L2,13 L5,13 L5,22 L7,22 L7,6 L9,6 L9,3 L11,3 Z" />
+</vector>
