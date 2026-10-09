@@ -16,6 +16,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.webkit.CookieManager;
 import android.webkit.JavascriptInterface;
@@ -64,7 +65,7 @@ public class MainActivity extends Activity {
         s.setDisplayZoomControls(false);
         s.setTextZoom(100);
         s.setCacheMode(WebSettings.LOAD_DEFAULT);
-        s.setUserAgentString(s.getUserAgentString() + " MyHmarochosApp/1.1");
+        s.setUserAgentString(s.getUserAgentString() + " MyHmarochosApp/1.2");
         CookieManager.getInstance().setAcceptCookie(true);
         CookieManager.getInstance().setAcceptThirdPartyCookies(web, true);
         web.setOverScrollMode(View.OVER_SCROLL_NEVER);
@@ -113,6 +114,8 @@ public class MainActivity extends Activity {
         Push.active = this; Push.channels(this); Push.fetchToken(this);
         takeOpen(getIntent());
         h.postDelayed(new Runnable() { public void run() { askNotifications(false); } }, 9000);
+        // щоб телефон не «присипляв» гру й сповіщення приходили вчасно — один раз просимо не обмежувати роботу у фоні
+        h.postDelayed(new Runnable() { public void run() { if (notificationsAllowed()) askBattery(false); } }, 40000);
     }
 
     @Override protected void onNewIntent(Intent i) { super.onNewIntent(i); setIntent(i); takeOpen(i); deliverOpen(); }
@@ -145,6 +148,19 @@ public class MainActivity extends Activity {
             } catch (Exception e) { try { startActivity(new Intent(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:" + getPackageName()))); } catch (Exception ignored) {} }
         }
     }
+    boolean batteryOk() {
+        if (Build.VERSION.SDK_INT < 23) return true;
+        android.os.PowerManager pm = (android.os.PowerManager) getSystemService(POWER_SERVICE);
+        return pm == null || pm.isIgnoringBatteryOptimizations(getPackageName());
+    }
+    void askBattery(boolean fromGame) {
+        if (batteryOk()) return;
+        SharedPreferences p = getSharedPreferences(Push.PREFS, 0);
+        if (!fromGame && p.getBoolean("askedBattery", false)) return;
+        p.edit().putBoolean("askedBattery", true).apply();
+        try { startActivity(new Intent(android.provider.Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS, Uri.parse("package:" + getPackageName()))); }
+        catch (Exception e) { try { startActivity(new Intent(android.provider.Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS)); } catch (Exception ignored) {} }
+    }
     @Override public void onRequestPermissionsResult(int code, String[] p, int[] r) { super.onRequestPermissionsResult(code, p, r); Push.fetchToken(this); jsTokenChanged(); }
 
     /** Що гра може запитати в застосунку (window.HmApp у JavaScript). */
@@ -152,7 +168,9 @@ public class MainActivity extends Activity {
         @JavascriptInterface public String getPushToken() { return Push.token(MainActivity.this); }
         @JavascriptInterface public boolean notificationsAllowed() { return MainActivity.this.notificationsAllowed(); }
         @JavascriptInterface public void requestNotifications() { h.post(new Runnable() { public void run() { askNotifications(true); } }); }
-        @JavascriptInterface public String appVersion() { return "1.1"; }
+        @JavascriptInterface public String appVersion() { return "1.2"; }
+        @JavascriptInterface public boolean batteryOk() { return MainActivity.this.batteryOk(); }
+        @JavascriptInterface public void requestBattery() { h.post(new Runnable() { public void run() { askBattery(true); } }); }
     }
 
     LinearLayout buildOffline() {

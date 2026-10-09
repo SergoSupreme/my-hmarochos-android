@@ -20,7 +20,7 @@ public class PushService extends FirebaseMessagingService {
         if (a != null && a.gameVisible()) return;
         RemoteMessage.Notification n = msg.getNotification();
         if (n == null) return;
-        String ch = n.getChannelId() != null ? n.getChannelId() : "main";
+        String ch = n.getChannelId() != null ? n.getChannelId() : "main_s";
         Intent open = new Intent(this, MainActivity.class).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_SINGLE_TOP);
         String target = msg.getData().get("open"); if (target != null) open.putExtra("open", target);
         int flags = PendingIntent.FLAG_UPDATE_CURRENT | (Build.VERSION.SDK_INT >= 23 ? PendingIntent.FLAG_IMMUTABLE : 0);
@@ -28,6 +28,7 @@ public class PushService extends FirebaseMessagingService {
         android.app.Notification.Builder b = Build.VERSION.SDK_INT >= 26 ? new android.app.Notification.Builder(this, ch) : new android.app.Notification.Builder(this);
         b.setSmallIcon(R.drawable.ic_stat_notify).setColor(0xFFF3A600).setContentTitle(n.getTitle()).setContentText(n.getBody())
             .setStyle(new android.app.Notification.BigTextStyle().bigText(n.getBody())).setAutoCancel(true).setContentIntent(pi);
+        if (Build.VERSION.SDK_INT < 26) b.setSound(Push.sound(this)).setPriority(android.app.Notification.PRIORITY_HIGH);
         NotificationManager nm = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         String tag = n.getTag();
         if (nm != null) nm.notify(tag, tag == null ? (int) System.currentTimeMillis() : 1, b.build());

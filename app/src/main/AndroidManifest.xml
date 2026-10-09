@@ -4,6 +4,7 @@
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
 
     <application android:label="@string/app_name" android:icon="@mipmap/ic_launcher" android:allowBackup="true"
         android:usesCleartextTraffic="false" android:hardwareAccelerated="true" android:largeHeap="true">
@@ -25,6 +26,6 @@
         </service>
         <meta-data android:name="com.google.firebase.messaging.default_notification_icon" android:resource="@drawable/ic_stat_notify" />
         <meta-data android:name="com.google.firebase.messaging.default_notification_color" android:resource="@color/notify" />
-        <meta-data android:name="com.google.firebase.messaging.default_notification_channel_id" android:value="main" />
+        <meta-data android:name="com.google.firebase.messaging.default_notification_channel_id" android:value="main_s" />
     </application>
 </manifest>
