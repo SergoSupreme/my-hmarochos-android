@@ -46,6 +46,9 @@ public class MainActivity extends Activity {
         super.onCreate(b);
         Window w = getWindow();
         w.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+        if (Build.VERSION.SDK_INT >= 28) { // на весь екран, включно з зоною камери («чубчика»)
+            WindowManager.LayoutParams lp = w.getAttributes(); lp.layoutInDisplayCutoutMode = 1 /* SHORT_EDGES */; w.setAttributes(lp);
+        }
         w.setStatusBarColor(Color.parseColor("#0a1236"));
         w.setNavigationBarColor(Color.parseColor("#0a1236"));
         root = new FrameLayout(this);
@@ -84,7 +87,7 @@ public class MainActivity extends Activity {
             @Override public void onPageFinished(WebView v, String url) {
                 if (failed) return;
                 loadedOk = true; hideSplash(); offline.setVisibility(View.GONE); web.setVisibility(View.VISIBLE);
-                jsTokenChanged(); deliverOpen();
+                jsTokenChanged(); deliverOpen(); sendInsets();
             }
             @Override public void onReceivedError(WebView v, WebResourceRequest r, WebResourceError e) {
                 if (r.isForMainFrame()) { failed = true; showOffline(); }
@@ -129,6 +132,17 @@ public class MainActivity extends Activity {
         h.post(new Runnable() { public void run() { if (loadedOk && web != null) web.evaluateJavascript("window.hmPushToken&&hmPushToken()", null); } });
     }
     boolean gameVisible() { return visible; }
+    /** Висота «чубчика»/камери → у гру як CSS-змінна --app-sat, щоб верхня панель не ховалась під камерою */
+    void sendInsets() {
+        if (Build.VERSION.SDK_INT < 28 || web == null) return;
+        try {
+            android.view.WindowInsets wi = getWindow().getDecorView().getRootWindowInsets();
+            android.view.DisplayCutout dc = wi == null ? null : wi.getDisplayCutout();
+            int top = dc == null ? 0 : dc.getSafeInsetTop();
+            float css = top / getResources().getDisplayMetrics().density;
+            web.evaluateJavascript("document.documentElement.style.setProperty('--app-sat','" + css + "px')", null);
+        } catch (Exception ignored) {}
+    }
     boolean notificationsAllowed() {
         if (Build.VERSION.SDK_INT >= 33 && checkSelfPermission("android.permission.POST_NOTIFICATIONS") != PackageManager.PERMISSION_GRANTED) return false;
         android.app.NotificationManager nm = (android.app.NotificationManager) getSystemService(NOTIFICATION_SERVICE);
@@ -272,7 +286,7 @@ public class MainActivity extends Activity {
         getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_STABLE | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
             | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION | View.SYSTEM_UI_FLAG_FULLSCREEN | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN);
     }
-    @Override public void onWindowFocusChanged(boolean f) { super.onWindowFocusChanged(f); if (f) immersive(); }
+    @Override public void onWindowFocusChanged(boolean f) { super.onWindowFocusChanged(f); if (f) { immersive(); sendInsets(); } }
     @Override protected void onResume() { super.onResume(); visible = true; Push.active = this; web.onResume(); web.resumeTimers(); immersive(); jsTokenChanged(); }
     @Override protected void onPause() { visible = false; web.onPause(); web.pauseTimers(); CookieManager.getInstance().flush(); super.onPause(); }
     @Override protected void onSaveInstanceState(Bundle o) { super.onSaveInstanceState(o); web.saveState(o); }
