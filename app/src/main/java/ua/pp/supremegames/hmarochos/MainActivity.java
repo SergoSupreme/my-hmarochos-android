@@ -37,7 +37,7 @@ import android.widget.Toast;
 public class MainActivity extends Activity {
     static final String GAME_URL = "https://supremegamescompany.pp.ua/games2/";
     static final String GAME_HOST = "supremegamescompany.pp.ua";
-    WebView web; ImageView splash; LinearLayout offline; FrameLayout root;
+    WebView web; ImageView splash; FrameLayout offline; FrameLayout root;
     boolean loadedOk = false, failed = false, visible = false; long backAt = 0;
     String pendingOpen = null; // куди перейти після натискання на сповіщення
     final Handler h = new Handler();
@@ -173,32 +173,88 @@ public class MainActivity extends Activity {
         @JavascriptInterface public void requestBattery() { h.post(new Runnable() { public void run() { askBattery(true); } }); }
     }
 
-    LinearLayout buildOffline() {
-        LinearLayout l = new LinearLayout(this);
-        l.setOrientation(LinearLayout.VERTICAL); l.setGravity(Gravity.CENTER);
-        l.setBackgroundColor(Color.parseColor("#0a1236")); int p = dp(28); l.setPadding(p, p, p, p);
-        ImageView ic = new ImageView(this); ic.setImageResource(R.mipmap.ic_launcher);
-        l.addView(ic, new LinearLayout.LayoutParams(dp(110), dp(110)));
-        TextView t = new TextView(this); t.setText("Немає з’єднання з інтернетом");
-        t.setTextColor(Color.WHITE); t.setTextSize(21); t.setGravity(Gravity.CENTER); t.setTypeface(null, android.graphics.Typeface.BOLD);
-        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(-2, -2); lp.topMargin = dp(22); l.addView(t, lp);
-        TextView t2 = new TextView(this); t2.setText("Перевір Wi-Fi або мобільний інтернет і спробуй ще раз — твій прогрес збережено на сервері.");
-        t2.setTextColor(Color.parseColor("#b9c6f0")); t2.setTextSize(14); t2.setGravity(Gravity.CENTER);
-        LinearLayout.LayoutParams lp2 = new LinearLayout.LayoutParams(-2, -2); lp2.topMargin = dp(10); l.addView(t2, lp2);
-        Button btn = new Button(this); btn.setText("Спробувати ще"); btn.setTextColor(Color.parseColor("#3d2200")); btn.setTextSize(17);
+    // ---------- екран «Немає інтернету»: заставка гри + стильне повідомлення, гра запускається сама, щойно з'явиться мережа ----------
+    static final String[][] OFF_TXT = { // мова телефона: заголовок, текст, кнопка, очікування
+        {"uk", "Відсутній інтернет", "Неможливо запустити гру. Перевір Wi-Fi або мобільний інтернет — гра запуститься сама, щойно з’явиться з’єднання. Твій прогрес збережено на сервері.", "Спробувати ще", "Очікуємо на з’єднання…"},
+        {"ru", "Нет интернета", "Невозможно запустить игру. Проверь Wi-Fi или мобильный интернет — игра запустится сама, как только появится соединение. Твой прогресс сохранён на сервере.", "Попробовать ещё", "Ожидаем соединение…"},
+        {"de", "Keine Internetverbindung", "Das Spiel kann nicht gestartet werden. Prüfe WLAN oder mobile Daten — das Spiel startet automatisch, sobald eine Verbindung besteht. Dein Fortschritt ist auf dem Server gespeichert.", "Erneut versuchen", "Warte auf Verbindung…"},
+        {"fr", "Pas d’internet", "Impossible de lancer le jeu. Vérifie le Wi-Fi ou les données mobiles — le jeu démarrera tout seul dès que la connexion revient. Ta progression est sauvegardée sur le serveur.", "Réessayer", "En attente de connexion…"},
+        {"it", "Nessuna connessione", "Impossibile avviare il gioco. Controlla il Wi-Fi o i dati mobili — il gioco partirà da solo appena torna la connessione. I tuoi progressi sono salvati sul server.", "Riprova", "In attesa di connessione…"},
+        {"ja", "インターネットに接続されていません", "ゲームを起動できません。Wi-Fiまたはモバイルデータを確認してください。接続が戻ると自動で起動します。進行状況はサーバーに保存されています。", "再試行", "接続を待っています…"},
+        {"ko", "인터넷 연결 없음", "게임을 시작할 수 없어요. Wi-Fi 또는 모바일 데이터를 확인하세요 — 연결되면 자동으로 시작됩니다. 진행 상황은 서버에 저장되어 있어요.", "다시 시도", "연결을 기다리는 중…"},
+        {"zh", "没有网络连接", "无法启动游戏。请检查 Wi-Fi 或移动数据——连接恢复后游戏会自动启动。你的进度已保存在服务器上。", "重试", "正在等待连接…"},
+        {"en", "No internet connection", "The game can’t start. Check your Wi-Fi or mobile data — the game will start by itself as soon as you’re back online. Your progress is saved on the server.", "Try again", "Waiting for connection…"},
+    };
+    String[] offTxt() {
+        String l = java.util.Locale.getDefault().getLanguage();
+        for (String[] t : OFF_TXT) if (t[0].equals(l)) return t;
+        return OFF_TXT[OFF_TXT.length - 1];
+    }
+    TextView offWait;
+    FrameLayout buildOffline() {
+        String[] T = offTxt();
+        FrameLayout f = new FrameLayout(this);
+        f.setClickable(true);
+        ImageView bg = new ImageView(this); bg.setImageResource(R.drawable.splash); bg.setScaleType(ImageView.ScaleType.CENTER_CROP);
+        f.addView(bg, new FrameLayout.LayoutParams(-1, -1));
+        View shade = new View(this);
+        shade.setBackground(new GradientDrawable(GradientDrawable.Orientation.TOP_BOTTOM, new int[]{0x00000000, 0x660a1236, 0xF00a1236}));
+        f.addView(shade, new FrameLayout.LayoutParams(-1, -1));
+
+        LinearLayout card = new LinearLayout(this);
+        card.setOrientation(LinearLayout.VERTICAL); card.setGravity(Gravity.CENTER_HORIZONTAL);
+        GradientDrawable cg = new GradientDrawable(GradientDrawable.Orientation.TL_BR, new int[]{Color.parseColor("#24398a"), Color.parseColor("#101944")});
+        cg.setCornerRadius(dp(24)); cg.setStroke(dp(2), Color.parseColor("#FFD34D"));
+        card.setBackground(cg); card.setPadding(dp(20), dp(18), dp(20), dp(18));
+        if (Build.VERSION.SDK_INT >= 21) card.setElevation(dp(10));
+
+        TextView ic = new TextView(this); ic.setText("📡"); ic.setTextSize(40); ic.setGravity(Gravity.CENTER);
+        card.addView(ic, new LinearLayout.LayoutParams(-2, -2));
+        TextView t = new TextView(this); t.setText(T[1]); t.setTextColor(Color.parseColor("#FFD34D")); t.setTextSize(21);
+        t.setGravity(Gravity.CENTER); t.setTypeface(null, android.graphics.Typeface.BOLD);
+        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(-2, -2); lp.topMargin = dp(6); card.addView(t, lp);
+        TextView t2 = new TextView(this); t2.setText(T[2]); t2.setTextColor(Color.parseColor("#D3DCFF")); t2.setTextSize(14.5f);
+        t2.setGravity(Gravity.CENTER); t2.setLineSpacing(0, 1.15f);
+        LinearLayout.LayoutParams lp2 = new LinearLayout.LayoutParams(-2, -2); lp2.topMargin = dp(8); card.addView(t2, lp2);
+
+        Button btn = new Button(this); btn.setText(T[3]); btn.setTextColor(Color.parseColor("#3d2200")); btn.setTextSize(17);
         btn.setAllCaps(false); btn.setTypeface(null, android.graphics.Typeface.BOLD);
         GradientDrawable g = new GradientDrawable(GradientDrawable.Orientation.TOP_BOTTOM, new int[]{Color.parseColor("#fff27a"), Color.parseColor("#ffc531"), Color.parseColor("#f08c00")});
         g.setCornerRadius(dp(26)); btn.setBackground(g); btn.setPadding(dp(30), 0, dp(30), 0);
-        LinearLayout.LayoutParams lp3 = new LinearLayout.LayoutParams(-2, dp(52)); lp3.topMargin = dp(26); l.addView(btn, lp3);
-        btn.setOnClickListener(new View.OnClickListener() { public void onClick(View v) {
-            if (!online()) { Toast.makeText(MainActivity.this, "Інтернету все ще немає", Toast.LENGTH_SHORT).show(); return; }
-            failed = false; offline.setVisibility(View.GONE); web.setVisibility(View.VISIBLE);
-            if (loadedOk) web.reload(); else web.loadUrl(GAME_URL);
-        }});
-        return l;
+        LinearLayout.LayoutParams lp3 = new LinearLayout.LayoutParams(-1, dp(52)); lp3.topMargin = dp(16); card.addView(btn, lp3);
+        btn.setOnClickListener(new View.OnClickListener() { public void onClick(View v) { retryOnline(true); } });
+
+        offWait = new TextView(this); offWait.setText(T[4]); offWait.setTextColor(Color.parseColor("#9FB0E8")); offWait.setTextSize(12.5f); offWait.setGravity(Gravity.CENTER);
+        LinearLayout.LayoutParams lp4 = new LinearLayout.LayoutParams(-2, -2); lp4.topMargin = dp(10); card.addView(offWait, lp4);
+
+        FrameLayout.LayoutParams cp = new FrameLayout.LayoutParams(-1, -2, Gravity.BOTTOM);
+        cp.leftMargin = cp.rightMargin = dp(16); cp.bottomMargin = dp(28);
+        f.addView(card, cp);
+        return f;
+    }
+    void retryOnline(boolean byUser) {
+        if (!online()) { if (byUser) { Toast.makeText(this, offTxt()[1], Toast.LENGTH_SHORT).show(); if (offWait != null) offWait.animate().alpha(0.2f).setDuration(150).withEndAction(new Runnable() { public void run() { offWait.animate().alpha(1f).setDuration(300); } }); } return; }
+        failed = false; offline.setVisibility(View.GONE); web.setVisibility(View.VISIBLE);
+        if (loadedOk) web.reload(); else web.loadUrl(GAME_URL);
+    }
+    // мережа з'явилась — пробуємо самі, без натискань
+    android.net.ConnectivityManager.NetworkCallback netCb;
+    void watchNetwork() {
+        if (Build.VERSION.SDK_INT < 24 || netCb != null) return;
+        ConnectivityManager cm = (ConnectivityManager) getSystemService(CONNECTIVITY_SERVICE); if (cm == null) return;
+        netCb = new android.net.ConnectivityManager.NetworkCallback() {
+            @Override public void onAvailable(android.net.Network n) {
+                h.postDelayed(new Runnable() { public void run() { if (offline.getVisibility() == View.VISIBLE) retryOnline(false); } }, 800);
+            }
+        };
+        try { cm.registerDefaultNetworkCallback(netCb); } catch (Exception ignored) {}
+    }
+    void pulseWait() { // м'яке «дихання» напису «Очікуємо на з'єднання…»
+        if (offWait == null || offline.getVisibility() != View.VISIBLE) return;
+        offWait.animate().alpha(offWait.getAlpha() > 0.6f ? 0.35f : 1f).setDuration(900).withEndAction(new Runnable() { public void run() { pulseWait(); } });
     }
 
-    void showOffline() { hideSplash(); web.setVisibility(View.INVISIBLE); offline.setVisibility(View.VISIBLE); }
+    void showOffline() { hideSplash(); web.setVisibility(View.INVISIBLE); if (offline.getVisibility() != View.VISIBLE) { offline.setAlpha(0f); offline.setVisibility(View.VISIBLE); offline.animate().alpha(1f).setDuration(300); } watchNetwork(); pulseWait(); }
     void hideSplash() {
         if (splash == null || splash.getVisibility() != View.VISIBLE) return;
         splash.animate().alpha(0f).setDuration(350).withEndAction(new Runnable() { public void run() { splash.setVisibility(View.GONE); } });
@@ -220,7 +276,7 @@ public class MainActivity extends Activity {
     @Override protected void onResume() { super.onResume(); visible = true; Push.active = this; web.onResume(); web.resumeTimers(); immersive(); jsTokenChanged(); }
     @Override protected void onPause() { visible = false; web.onPause(); web.pauseTimers(); CookieManager.getInstance().flush(); super.onPause(); }
     @Override protected void onSaveInstanceState(Bundle o) { super.onSaveInstanceState(o); web.saveState(o); }
-    @Override protected void onDestroy() { if (Push.active == this) Push.active = null; if (web != null) { root.removeView(web); web.destroy(); } super.onDestroy(); }
+    @Override protected void onDestroy() { if (Push.active == this) Push.active = null; if (netCb != null) try { ((ConnectivityManager) getSystemService(CONNECTIVITY_SERVICE)).unregisterNetworkCallback(netCb); } catch (Exception ignored) {} if (web != null) { root.removeView(web); web.destroy(); } super.onDestroy(); }
 
     /** «Назад»: спершу закриває вікна гри, потім — подвійне натискання для виходу. */
     @Override public void onBackPressed() {
