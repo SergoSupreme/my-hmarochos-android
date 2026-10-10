@@ -23,6 +23,7 @@ import android.webkit.JavascriptInterface;
 import android.webkit.WebChromeClient;
 import android.webkit.WebResourceError;
 import android.webkit.WebResourceRequest;
+import android.webkit.WebResourceResponse;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
@@ -84,6 +85,8 @@ public class MainActivity extends Activity {
                 return true;
             }
             @Override public void onPageStarted(WebView v, String url, Bitmap f) { failed = false; }
+            // гра з пам'яті телефона: картинки, звуки — одразу з APK; код — свіжий із сервера (оновлення без нового APK)
+            @Override public WebResourceResponse shouldInterceptRequest(WebView v, WebResourceRequest r) { return localAsset(r); }
             @Override public void onPageFinished(WebView v, String url) {
                 if (failed) return;
                 loadedOk = true; hideSplash(); offline.setVisibility(View.GONE); web.setVisibility(View.VISIBLE);
@@ -132,6 +135,44 @@ public class MainActivity extends Activity {
         h.post(new Runnable() { public void run() { if (loadedOk && web != null) web.evaluateJavascript("window.hmPushToken&&hmPushToken()", null); } });
     }
     boolean gameVisible() { return visible; }
+
+    // ---------- вбудовані файли гри (assets/www) ----------
+    java.util.HashSet<String> www;
+    java.util.HashSet<String> wwwFiles() {
+        if (www != null) return www;
+        java.util.HashSet<String> set = new java.util.HashSet<>();
+        try (java.io.BufferedReader br = new java.io.BufferedReader(new java.io.InputStreamReader(getAssets().open("www-files.txt"), "UTF-8"))) {
+            String l; while ((l = br.readLine()) != null) if (!l.isEmpty()) set.add(l.trim());
+        } catch (Exception ignored) {}
+        return www = set;
+    }
+    static String mime(String f) {
+        String e = f.substring(f.lastIndexOf('.') + 1).toLowerCase(java.util.Locale.ROOT);
+        switch (e) {
+            case "png": return "image/png"; case "jpg": case "jpeg": return "image/jpeg"; case "webp": return "image/webp";
+            case "svg": return "image/svg+xml"; case "gif": return "image/gif"; case "mp3": return "audio/mpeg"; case "ogg": return "audio/ogg";
+            case "js": return "application/javascript"; case "css": return "text/css"; case "html": return "text/html"; case "json": return "application/json";
+            case "woff2": return "font/woff2"; default: return "application/octet-stream";
+        }
+    }
+    WebResourceResponse localAsset(WebResourceRequest r) {
+        try {
+            if (!"GET".equalsIgnoreCase(r.getMethod())) return null;
+            Uri u = r.getUrl();
+            if (u.getHost() == null || !u.getHost().endsWith(GAME_HOST)) return null;
+            String p = u.getPath(); if (p == null || !p.startsWith("/games2/")) return null;
+            String rel = p.substring(8); if (rel.isEmpty()) rel = "index.html";
+            if (rel.startsWith("api/") || !wwwFiles().contains(rel)) return null; // сервер (API, нові файли) — як завжди, з інтернету
+            String m = mime(rel);
+            boolean code = m.startsWith("text/") || m.equals("application/javascript") || m.equals("application/json");
+            if (code && online()) return null; // код і сторінки беремо з сервера: так оновлення гри приходять без нового APK
+            WebResourceResponse res = new WebResourceResponse(m, code ? "UTF-8" : null, getAssets().open("www/" + rel));
+            java.util.HashMap<String, String> h = new java.util.HashMap<>();
+            h.put("Cache-Control", "public, max-age=2592000"); h.put("Access-Control-Allow-Origin", "*");
+            res.setResponseHeaders(h);
+            return res;
+        } catch (Exception e) { return null; }
+    }
     /** Висота «чубчика»/камери → у гру як CSS-змінна --app-sat, щоб верхня панель не ховалась під камерою */
     void sendInsets() {
         if (Build.VERSION.SDK_INT < 28 || web == null) return;

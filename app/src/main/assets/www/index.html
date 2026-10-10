@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Cache-Control" content="no-cache, must-revalidate">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover, interactive-widget=resizes-content">
+<meta name="theme-color" content="#0d1738">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="images/icons/crane.png">
+<title>Мій Хмарочос</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;800;900&family=Russo+One&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css?v=1.7.2">
+</head>
+<body>
+<div id="loader">
+  <div class="ld-bg"></div><div class="ld-shade"></div>
+  <div class="ld-ver" id="ld-ver">v1.2</div>
+  <div class="ld-bottom">
+    <div class="ld-tip" id="ld-tip">Завантаження…</div>
+    <div class="ld-bar"><i id="ld-fill"></i><span id="ld-pct">0%</span></div>
+    <div class="ld-company"><span><small>developed by</small><b>Supreme<em>Games</em>Company</b></span></div>
+  </div>
+</div>
+<div id="pc-bg" aria-hidden="true"></div><div id="pc-frame" aria-hidden="true"><i class="c tl"></i><i class="c tr"></i><i class="c bl"></i><i class="c br"></i></div>
+<div id="app" class="day">
+  <div id="sky"><div id="stars"></div><div id="sun"></div><div id="clouds"></div></div>
+
+  <div id="topbar">
+    <div class="res" id="res-coins"><img src="images/icons/coin.png" alt=""><span id="coins">0</span></div>
+    <div id="lvl" role="button" aria-label="Рівень">
+      <div id="lvl-bar"><i></i></div>
+      <div class="lvl-star"><svg viewBox="0 0 60 58" width="52" height="50" aria-hidden="true">
+        <defs><linearGradient id="sg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff3a0"/><stop offset=".45" stop-color="#ffc531"/><stop offset="1" stop-color="#e07a00"/></linearGradient></defs>
+        <path d="M30 2l8.2 17.6 19.3 2.3-14.2 13.3 3.7 19.1L30 44.8 13 54.3l3.7-19.1L2.5 21.9l19.3-2.3z" fill="url(#sg)" stroke="#8a4a00" stroke-width="2.5" stroke-linejoin="round"/></svg>
+        <b id="lvl-num">1</b></div>
+    </div>
+    <div class="res" id="res-bucks"><img src="images/icons/cash.png" alt=""><span id="bucks">0</span><div class="plus">+</div></div>
+  </div>
+
+  <div id="side-left"></div>
+  <div id="top-icons"><button class="ticon adm-btn" id="ti-adm" aria-label="Адмін-панель" hidden><img src="images/icons/crown.png" alt=""></button><button class="ticon" id="ti-mail" aria-label="Пошта"><img src="images/icons/mail2.png" alt=""><b hidden>0</b></button><button class="ticon" id="ti-news" aria-label="Новини"><img src="images/icons/megaphone2.png" alt=""><b hidden>0</b></button></div>
+  <div id="side-right">
+    <button class="sbtn" id="side-up" aria-label="Нагору"><span class="arr up"></span></button>
+    <button class="sbtn lift" id="side-lift" aria-label="Ліфт"><span class="badge" hidden>0</span><img src="images/icons/elev_1.png" alt=""></button>
+    <button class="sbtn" id="side-down" aria-label="Донизу"><span class="arr down"></span></button>
+  </div>
+
+  <div id="scroller">
+    <div id="tower">
+      <div id="roof">
+        <div class="roof-hub">
+          <div class="hrow r1">
+          <button class="rn" id="rn-daily"><span class="badge" hidden>0</span><img src="images/icons/clipboard.png" alt=""><small>Завдання</small></button>
+          <button class="rn" id="rn-chests"><span class="badge" hidden>0</span><img src="images/icons/chest_purple.png" alt=""><small>Мої скрині</small></button>
+          <button class="rn" id="rn-coll"><span class="badge" hidden>0</span><img src="images/icons/cards.png" alt=""><small>Колекції</small></button>
+          <button class="rn" id="rn-lotto"><span class="badge" hidden>0</span><img src="images/icons/lt_2.png" alt=""><small>Лотерея</small></button>
+          <button class="rn" id="rn-pass"><span class="badge" hidden>0</span><img src="images/icons/ach_laurel.png" alt=""><small>Пропуск</small></button>
+          </div>
+          <div class="hrow r2">
+          <button class="rn" id="rn-up"><img src="images/icons/ach_growth.png" alt=""><small>Бізнес</small></button>
+          <button class="rn cupbtn" id="rn-cups"><span class="badge" hidden>0</span><img src="images/icons/cup_1.png" alt=""><div class="cupbar" id="cupbar"><i></i><span>0/0</span></div></button>
+          <button class="rn" id="rn-maze"><span class="badge" hidden>0</span><img src="images/icons/mz_closed.png" alt=""><small>Лабіринт</small></button>
+          </div>
+          <div class="hrow r3">
+          <div class="vipcol"><button class="rn" id="rn-vip"><span class="badge" hidden>0</span><img src="images/icons/vip2.png" alt=""><small>VIP-завдання</small></button><div id="rev-board" role="button" aria-label="Виручка за годину"><div class="rb-screen"><img src="images/icons/cash_big.png" alt=""><div class="rb-txt"><small>Виручка/год</small><b id="rev-now">0</b></div></div><div class="rb-rec">рекорд <b id="rev-rec">0</b></div><div class="bd-legs"><i></i><i></i></div></div></div>
+          <button id="build-btn" class="board"><div class="bd-screen"><img src="images/icons/crane.png" alt=""><span>Новий<br>поверх</span></div>
+            <div class="bd-price"><img src="images/icons/coin.png" alt=""><b id="build-cost">0</b></div><div class="bd-legs"><i></i><i></i></div></button>
+          <button class="rn" id="rn-gift"><span class="badge" hidden>!</span><img src="images/icons/gift_red.png" alt=""><small>Щоденний<br>бонус</small></button>
+          </div>
+        </div>
+        <div class="roof-deck">
+          <div class="glassrail"><i class="hr"></i></div>
+          <div id="helipad"><div class="hpad"><b>H</b></div><img class="heli" src="images/icons/heli_red.png" alt=""><span class="htime"></span></div>
+          <div class="liftcap"><div class="lc-box"><i></i></div></div>
+          <div class="deck-in"><div id="tower-stars"></div><div class="roof-sign">МІЙ ХМАРОЧОС</div></div>
+        </div>
+      </div>
+      <div id="floors-wrap">
+        <div id="shaft"><div class="motor"><i class="mg"></i><i class="mp"></i><i class="ml"></i></div><div class="rail l"></div><div class="rail r"></div>
+          <div id="car" role="button" aria-label="Ліфт"><img class="cab" src="images/icons/elev_1.png" alt=""><i class="rope2"></i><div class="riders"></div><div class="platform"></div></div>
+          <div class="pit"></div></div>
+        <div id="floors"></div>
+      </div>
+      <div class="ground">
+        <div class="grass-edge"></div>
+        <div class="flowers"></div>
+        <div class="parking"><div class="pk-lot"><div class="pk-bay" data-b="0"></div><div class="pk-bay" data-b="1"></div><div class="pk-bay" data-b="2"></div><div class="pk-bay" data-b="3"></div><div class="pk-aisle"><i></i></div></div>
+          <div class="pk-sign"><b>P</b></div><div class="pk-ev"><i></i></div><div class="pk-hedge"></div><div class="pk-led"><b>P</b><span id="pk-free">0</span></div><div class="pk-booth"><i></i></div><div class="pk-pole l"></div><div class="pk-pole r"></div><div class="pk-drive"><div class="pk-bar"><i></i></div></div></div>
+        <img class="tree" data-tree="tr_oak" data-snow="tr_snow" src="images/icons/tr_oak.png" alt="" style="left:-44px;width:60px;bottom:150px;display:none">
+        <img class="tree" data-tree="tr_sakura" data-snow="tr_snow" src="images/icons/tr_sakura.png" alt="" style="left:168px;width:50px;bottom:110px">
+        <img class="tree" data-tree="tr_pine" data-snow="tr_snow" src="images/icons/tr_pine.png" alt="" style="right:66px;width:58px;bottom:104px">
+        <img class="tree" data-tree="tr_apple" data-snow="tr_snow" src="images/icons/tr_apple.png" alt="" style="right:-12px;width:90px">
+        <div class="lamp" style="left:174px"><i></i><b class="lglow"></b></div>
+        <div class="lamp" style="right:130px"><i></i><b class="lglow"></b></div>
+        <div class="sidewalk"></div>
+        <div class="road"><div class="crosswalk"></div></div>
+      </div>
+    </div>
+  </div>
+
+  <canvas id="weather-fx"></canvas>
+  <div id="flash"></div>
+
+  <nav id="bottombar">
+    <button class="nav" id="nav-quest"><span class="badge" hidden>0</span><span class="tile"><img src="images/icons/clipboard.png" alt=""></span>Завдання</button>
+    <button class="nav" id="nav-res"><span class="badge" hidden>0</span><span class="tile"><img src="images/icons/friends.png" alt=""></span>Жителі</button>
+    <button class="nav" id="nav-forum"><span class="tile"><img src="images/icons/chat.png" alt=""></span>Чат</button>
+    <button class="nav big" id="nav-ops"><span class="badge" hidden>0</span><div class="disc"><img src="images/icons/cart.png" alt=""></div><span class="lbl">Дії</span></button>
+    <button class="nav" id="nav-corp"><span class="tile"><img src="images/icons/bz_office.png" alt=""></span>Корпорація</button>
+    <button class="nav" id="nav-shop"><span class="tile"><img src="images/icons/cart.png" alt=""></span>Магазин</button>
+    <button class="nav" id="nav-menu"><span class="tile"><img src="images/icons/settings.png" alt=""></span>Налаштування</button>
+  </nav>
+
+  <div id="modal-bg"><div id="modal"><div class="m-head" id="m-head"></div><div class="m-body" id="m-body"></div></div></div>
+  <div id="toast"></div>
+  <div id="reward"><div class="rays"></div><div class="ribbon"></div><img class="big" src="images/icons/gift_red.png" alt=""><div class="sub2"></div><div class="items"></div><p></p><button class="btn gold shine" style="position:relative;padding:12px 44px;font-size:18px" hidden>Чудово!</button></div>
+</div>
+<script src="assets.js?v=1.7.2"></script>
+<script src="data.js?v=1.7.2"></script>
+<script src="i18n.js?v=1.7.2"></script>
+<script src="net.js?v=1.7.2"></script>
+<script src="game.js?v=1.7.2"></script>
+<script src="admin.js?v=1.7.2"></script>
+<script src="corp.js?v=1.7.2"></script>
+<script src="tut.js?v=1.7.2"></script>
+</body>
+</html>
